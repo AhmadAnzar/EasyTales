@@ -26,9 +26,6 @@ const Footer = () => {
             <li>
               <Link to="/write">Write</Link>
             </li>
-            <li>
-              <Link to="/contact">Contact</Link>
-            </li>
           </ul>
         </div>
 
@@ -36,19 +33,13 @@ const Footer = () => {
           <h4 className="footer-heading">Community</h4>
           <ul className="footer-links">
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
-                Guidelines
-              </a>
+              <Link to="/guidelines">Guidelines</Link>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
-                FAQ
-              </a>
+              <Link to="/faq">FAQ</Link>
             </li>
             <li>
-              <a href="#" target="_blank" rel="noopener noreferrer">
-                Support
-              </a>
+              <Link to="/support">Support</Link>
             </li>
           </ul>
         </div>
