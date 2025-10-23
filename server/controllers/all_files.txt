@@ -1,0 +1,871 @@
+import User from '../models/User.js';
+import Story from '../models/Story.js';
+import Paragraph from '../models/Paragraph.js';
+
+// @desc    Get all users
+// @route   GET /api/admin/users
+// @access  Private/Admin
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password').sort({ createdAt: -1 });
+    res.json({ success: true, users });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all stories (admin view)
+// @route   GET /api/admin/stories
+// @access  Private/Admin
+export const getAllStoriesAdmin = async (req, res) => {
+  try {
+    const stories = await Story.find()
+      .populate('author', 'username email')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, stories });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete paragraph (admin)
+// @route   DELETE /api/admin/paragraphs/:id
+// @access  Private/Admin
+export const deleteParagraphAdmin = async (req, res) => {
+  try {
+    const paragraph = await Paragraph.findById(req.params.id);
+
+    if (!paragraph) {
+      return res.status(404).json({ message: 'Paragraph not found' });
+    }
+
+    await Paragraph.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: 'Paragraph deleted successfully by admin' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete user (admin)
+// @route   DELETE /api/admin/users/:id
+// @access  Private/Admin
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Delete user's stories and paragraphs
+    await Story.deleteMany({ author: req.params.id });
+    await Paragraph.deleteMany({ author: req.params.id });
+    await User.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: 'User and associated content deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete story (admin)
+// @route   DELETE /api/admin/stories/:id
+// @access  Private/Admin
+export const deleteStoryAdmin = async (req, res) => {
+  try {
+    const story = await Story.findById(req.params.id);
+
+    if (!story) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    // Delete all paragraphs associated with this story
+    await Paragraph.deleteMany({ story: req.params.id });
+    await Story.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: 'Story deleted successfully by admin' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+import axios from 'axios';
+import Story from '../models/Story.js';
+import Paragraph from '../models/Paragraph.js';
+
+// @desc    Generate AI paragraph suggestion
+// @route   POST /api/ai/generate
+// @access  Private
+export const generateParagraph = async (req, res) => {
+  try {
+    const { storyId, prompt } = req.body;
+
+    if (!storyId) {
+      return res.status(400).json({ message: 'Story ID is required' });
+    }
+
+    // Get story and existing paragraphs for context
+    const story = await Story.findById(storyId);
+    if (!story) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    const paragraphs = await Paragraph.find({ story: storyId })
+      .sort({ position: 1 })
+      .limit(5); // Get last 5 paragraphs for context
+
+    const context = paragraphs.map(p => p.content).join('\n\n');
+
+    // Check if OpenAI API key is configured
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      // Return a mock suggestion if no API key
+      return res.json({
+        success: true,
+        suggestion: `This is a continuation of "${story.title}". ${prompt || 'The story continues with unexpected twists and turns...'}`,
+        message: 'Mock AI suggestion (OpenAI API key not configured)',
+      });
+    }
+
+    // Call OpenAI API
+    try {
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a creative storytelling assistant. Generate the next paragraph for a story titled "${story.title}" in the ${story.genre || 'general'} genre.`,
+            },
+            {
+              role: 'user',
+              content: `Here's the story so far:\n\n${context}\n\n${prompt || 'Continue the story naturally.'}`,
+            },
+          ],
+          max_tokens: 200,
+          temperature: 0.8,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const suggestion = response.data.choices[0].message.content.trim();
+
+      res.json({
+        success: true,
+        suggestion,
+      });
+    } catch (apiError) {
+      console.error('OpenAI API error:', apiError.response?.data || apiError.message);
+      // Return a fallback suggestion
+      res.json({
+        success: true,
+        suggestion: `Continuing "${story.title}"... ${prompt || 'The adventure unfolds with new challenges and discoveries.'}`,
+        message: 'AI API unavailable, returning fallback suggestion',
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Summarize a story
+// @route   POST /api/ai/summarize
+// @access  Public
+export const summarizeStory = async (req, res) => {
+  try {
+    const { storyId } = req.body;
+
+    if (!storyId) {
+      return res.status(400).json({ message: 'Story ID is required' });
+    }
+
+    const story = await Story.findById(storyId);
+    if (!story) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    const paragraphs = await Paragraph.find({ story: storyId }).sort({ position: 1 });
+    const content = paragraphs.map(p => p.content).join('\n\n');
+
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      // Return a simple summary if no API key
+      return res.json({
+        success: true,
+        summary: `${story.title} - A ${story.genre || 'collaborative'} story with ${paragraphs.length} paragraphs. ${story.description || ''}`,
+        message: 'Mock summary (OpenAI API key not configured)',
+      });
+    }
+
+    try {
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful assistant that summarizes stories concisely.',
+            },
+            {
+              role: 'user',
+              content: `Summarize this story in 2-3 sentences:\n\n${content}`,
+            },
+          ],
+          max_tokens: 150,
+          temperature: 0.5,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const summary = response.data.choices[0].message.content.trim();
+
+      res.json({
+        success: true,
+        summary,
+      });
+    } catch (apiError) {
+      console.error('OpenAI API error:', apiError.response?.data || apiError.message);
+      res.json({
+        success: true,
+        summary: `${story.title}: ${story.description || 'A collaborative story'} with ${paragraphs.length} paragraphs.`,
+        message: 'AI API unavailable, returning basic summary',
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Moderate paragraph content
+// @route   POST /api/ai/moderate
+// @access  Private
+export const moderateContent = async (req, res) => {
+  try {
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ message: 'Content is required' });
+    }
+
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      // Return a permissive response if no API key
+      return res.json({
+        success: true,
+        approved: true,
+        message: 'Content moderation not configured',
+      });
+    }
+
+    try {
+      const response = await axios.post(
+        'https://api.openai.com/v1/moderations',
+        {
+          input: content,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      const result = response.data.results[0];
+      const approved = !result.flagged;
+
+      res.json({
+        success: true,
+        approved,
+        categories: result.categories,
+        message: approved ? 'Content approved' : 'Content flagged for review',
+      });
+    } catch (apiError) {
+      console.error('OpenAI API error:', apiError.response?.data || apiError.message);
+      res.json({
+        success: true,
+        approved: true,
+        message: 'Moderation API unavailable, content approved by default',
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+
+// Generate JWT token
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET || 'your-secret-key', {
+    expiresIn: '7d',
+  });
+};
+
+// @desc    Register new user
+// @route   POST /api/auth/signup
+// @access  Public
+export const signup = async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Please provide all required fields' });
+    }
+
+    // Check if user exists
+    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Create user
+    const user = await User.create({ username, email, password });
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    res.status(201).json({
+      success: true,
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Login user
+// @route   POST /api/auth/login
+// @access  Public
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please provide email and password' });
+    }
+
+    // Check user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Logout user
+// @route   POST /api/auth/logout
+// @access  Private
+export const logout = async (req, res) => {
+  try {
+    // For JWT, logout is handled client-side by removing token
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get current user
+// @route   GET /api/auth/me
+// @access  Private
+export const me = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+import Paragraph from '../models/Paragraph.js';
+import Story from '../models/Story.js';
+
+// @desc    Add paragraph to story
+// @route   POST /api/paragraphs
+// @access  Private
+export const createParagraph = async (req, res) => {
+  try {
+    const { content, storyId, parentParagraphId } = req.body;
+
+    if (!content || !storyId) {
+      return res.status(400).json({ message: 'Content and storyId are required' });
+    }
+
+    // Verify story exists and is open
+    const story = await Story.findById(storyId);
+    if (!story) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+    
+    if (story.status === 'closed') {
+      return res.status(400).json({ message: 'Story is closed for new paragraphs' });
+    }
+
+    const paragraph = await Paragraph.create({
+      content,
+      storyId,
+      authorId: req.userId,
+      parentParagraphId: parentParagraphId || null,
+      voteWindowEndsAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours voting window
+    });
+
+    const populatedParagraph = await Paragraph.findById(paragraph._id)
+      .populate('authorId', 'username');
+
+    res.status(201).json({ success: true, paragraph: populatedParagraph });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get paragraphs for a story
+// @route   GET /api/paragraphs/:storyId
+// @access  Public
+export const getParagraphsByStory = async (req, res) => {
+  try {
+    const paragraphs = await Paragraph.find({ storyId: req.params.storyId })
+      .populate('authorId', 'username')
+      .sort({ createdAt: 1 });
+
+    res.json({ success: true, paragraphs });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update paragraph
+// @route   PUT /api/paragraphs/:id
+// @access  Private
+export const updateParagraph = async (req, res) => {
+  try {
+    const paragraph = await Paragraph.findById(req.params.id);
+
+    if (!paragraph) {
+      return res.status(404).json({ message: 'Paragraph not found' });
+    }
+
+    // Check if user is the author
+    if (paragraph.author.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this paragraph' });
+    }
+
+    const { content } = req.body;
+    if (content) paragraph.content = content;
+
+    await paragraph.save();
+
+    const populatedParagraph = await Paragraph.findById(paragraph._id)
+      .populate('author', 'username');
+
+    res.json({ success: true, paragraph: populatedParagraph });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete paragraph
+// @route   DELETE /api/paragraphs/:id
+// @access  Private
+export const deleteParagraph = async (req, res) => {
+  try {
+    const paragraph = await Paragraph.findById(req.params.id);
+
+    if (!paragraph) {
+      return res.status(404).json({ message: 'Paragraph not found' });
+    }
+
+    // Check if user is the author
+    if (paragraph.author.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this paragraph' });
+    }
+
+    await Paragraph.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: 'Paragraph deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+import Story from '../models/Story.js';
+import Paragraph from '../models/Paragraph.js';
+
+// @desc    Get all stories with filters
+// @route   GET /api/stories
+// @access  Public
+export const getAllStories = async (req, res) => {
+  try {
+    const { genre, status, search } = req.query;
+    const filter = {};
+
+    if (status) filter.status = status;
+    if (genre) filter['metadata.genre'] = genre;
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { 'metadata.description': { $regex: search, $options: 'i' } },
+        { 'metadata.tags': { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const stories = await Story.find(filter)
+      .populate('createdBy', 'username')
+      .populate('seed_paragraph_id', 'content')
+      .sort({ createdAt: -1 });
+
+    // Get paragraph counts for each story
+    const storiesWithCounts = await Promise.all(
+      stories.map(async (story) => {
+        const paragraphCount = await Paragraph.countDocuments({ storyId: story._id });
+        return {
+          ...story.toObject(),
+          paragraphCount
+        };
+      })
+    );
+
+    res.json({ success: true, stories: storiesWithCounts });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Create new story
+// @route   POST /api/stories
+// @access  Private
+export const createStory = async (req, res) => {
+  try {
+    const { title, description, genre, tags, firstParagraph } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ message: 'Title is required' });
+    }
+
+    const story = await Story.create({
+      title,
+      createdBy: req.userId,
+      metadata: {
+        description: description || '',
+        genre: genre || 'general',
+        tags: tags || ['collaborative']
+      }
+    });
+
+    // Create seed paragraph if provided
+    let seedParagraph = null;
+    if (firstParagraph) {
+      seedParagraph = await Paragraph.create({
+        storyId: story._id,
+        content: firstParagraph,
+        authorId: req.userId,
+        parentParagraphId: null
+      });
+      
+      story.seed_paragraph_id = seedParagraph._id;
+      await story.save();
+    }
+
+    const populatedStory = await Story.findById(story._id)
+      .populate('createdBy', 'username')
+      .populate('seed_paragraph_id', 'content');
+
+    res.status(201).json({ success: true, story: populatedStory });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get single story by ID
+// @route   GET /api/stories/:id
+// @access  Public
+export const getStoryById = async (req, res) => {
+  try {
+    const story = await Story.findById(req.params.id)
+      .populate('createdBy', 'username')
+      .populate('seed_paragraph_id', 'content')
+      .populate('winningParagraphId', 'content');
+
+    if (!story) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    // Get paragraphs for this story, sorted by creation time
+    const paragraphs = await Paragraph.find({ storyId: req.params.id })
+      .populate('authorId', 'username')
+      .sort({ createdAt: 1 });
+
+    res.json({ success: true, story: { ...story.toObject(), paragraphs } });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update story
+// @route   PUT /api/stories/:id
+// @access  Private
+export const updateStory = async (req, res) => {
+  try {
+    const story = await Story.findById(req.params.id);
+
+    if (!story) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    // Check if user is the author
+    if (story.author.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this story' });
+    }
+
+    const { title, description, genre, status } = req.body;
+    const updateData = {};
+
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+    if (genre) updateData.genre = genre;
+    if (status) updateData.status = status;
+
+    const updatedStory = await Story.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true, runValidators: true }
+    ).populate('author', 'username');
+
+    res.json({ success: true, story: updatedStory });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Delete story
+// @route   DELETE /api/stories/:id
+// @access  Private
+export const deleteStory = async (req, res) => {
+  try {
+    const story = await Story.findById(req.params.id);
+
+    if (!story) {
+      return res.status(404).json({ message: 'Story not found' });
+    }
+
+    // Check if user is the author
+    if (story.author.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this story' });
+    }
+
+    // Delete all paragraphs associated with this story
+    await Paragraph.deleteMany({ story: req.params.id });
+
+    await Story.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: 'Story deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+import User from '../models/User.js';
+import Story from '../models/Story.js';
+
+// @desc    Get user by ID
+// @route   GET /api/users/:id
+// @access  Public
+export const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update user profile
+// @route   PUT /api/users/:id
+// @access  Private
+export const updateUser = async (req, res) => {
+  try {
+    // Check if user is updating their own profile
+    if (req.params.id !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this profile' });
+    }
+
+    const { username, email } = req.body;
+    const updateData = {};
+
+    if (username) updateData.username = username;
+    if (email) updateData.email = email;
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get all stories by user
+// @route   GET /api/users/:id/stories
+// @access  Public
+export const getUserStories = async (req, res) => {
+  try {
+    const stories = await Story.find({ author: req.params.id })
+      .populate('author', 'username')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, stories });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+import Vote from '../models/Vote.js';
+import Paragraph from '../models/Paragraph.js';
+
+// @desc    Cast or update vote on paragraph
+// @route   POST /api/votes
+// @access  Private
+export const castVote = async (req, res) => {
+  try {
+    const { paragraphId, vote } = req.body;
+
+    if (!paragraphId || vote === undefined) {
+      return res.status(400).json({ message: 'Paragraph ID and vote are required' });
+    }
+
+    if (![1, -1].includes(vote)) {
+      return res.status(400).json({ message: 'Vote must be 1 (upvote) or -1 (downvote)' });
+    }
+
+    // Verify paragraph exists
+    const paragraph = await Paragraph.findById(paragraphId);
+    if (!paragraph) {
+      return res.status(404).json({ message: 'Paragraph not found' });
+    }
+
+    // Check if user already voted
+    let existingVote = await Vote.findOne({ userId: req.userId, paragraphId: paragraphId });
+
+    if (existingVote) {
+      // User already voted, update the vote if different
+      if (existingVote.vote !== vote) {
+        // Remove old vote from count
+        paragraph.votesCount -= existingVote.vote;
+        
+        // Add new vote to count
+        paragraph.votesCount += vote;
+        
+        existingVote.vote = vote;
+        await existingVote.save();
+        await paragraph.save();
+      }
+    } else {
+      // New vote
+      existingVote = await Vote.create({
+        userId: req.userId,
+        paragraphId: paragraphId,
+        vote: vote,
+      });
+
+      // Update paragraph vote count
+      paragraph.votesCount += vote;
+      await paragraph.save();
+    }
+
+    res.json({
+      success: true,
+      vote: existingVote,
+      votesCount: paragraph.votesCount,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get vote counts for a paragraph
+// @route   GET /api/votes/:paragraphId
+// @access  Public
+export const getVoteCounts = async (req, res) => {
+  try {
+    const paragraph = await Paragraph.findById(req.params.paragraphId);
+
+    if (!paragraph) {
+      return res.status(404).json({ message: 'Paragraph not found' });
+    }
+
+    res.json({
+      success: true,
+      votesCount: paragraph.votesCount,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get user's vote on a paragraph
+// @route   GET /api/votes/user/:paragraphId
+// @access  Private
+export const getUserVote = async (req, res) => {
+  try {
+    const vote = await Vote.findOne({
+      userId: req.userId,
+      paragraphId: req.params.paragraphId,
+    });
+
+    res.json({
+      success: true,
+      vote: vote ? vote.vote : null,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
