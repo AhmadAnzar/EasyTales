@@ -75,13 +75,13 @@
 }
 
 .filter-button:hover {
-  border-color: #667eea;
+  border-color: var(--secondary-color);
 }
 
 .filter-button.active {
-  background: #667eea;
+  background: var(--secondary-color);
   color: white;
-  border-color: #667eea;
+  border-color: var(--secondary-color);
 }
 
 .stories-grid {
@@ -161,7 +161,7 @@
   display: inline-block;
   margin-top: 1rem;
   padding: 0.75rem 1.5rem;
-  background: #667eea;
+  background: var(--secondary-color);
   color: white;
   text-decoration: none;
   border-radius: 8px;

@@ -23,7 +23,7 @@
 
 .back-button:hover {
   border-color: var(--primary-color);
-  color: #667eea;
+  color: var(--secondary-color);
   transform: translateX(-2px);
 }
 
@@ -45,7 +45,7 @@
 
 .error-container button {
   padding: 0.8rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -62,10 +62,10 @@
 .story-header {
   margin-bottom: 2rem;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
   border-radius: 12px;
   color: white;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 20px rgba(139, 69, 19, 0.3);
 }
 
 .story-title {
@@ -187,7 +187,7 @@
 
 .add-paragraph-button {
   padding: 0.8rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -199,7 +199,7 @@
 
 .add-paragraph-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 16px rgba(139, 69, 19, 0.4);
 }
 
 .paragraphs-list {
@@ -226,7 +226,7 @@
 .add-first-paragraph {
   margin-top: 1rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -238,7 +238,7 @@
 
 .add-first-paragraph:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 16px rgba(139, 69, 19, 0.4);
 }
 
 /* Responsive Design */

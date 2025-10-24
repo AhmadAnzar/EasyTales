@@ -87,8 +87,8 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.2);
 }
 
 .auth-button {
@@ -117,7 +117,7 @@
 }
 
 .auth-link {
-  color: #667eea;
+  color: var(--secondary-color);
   font-weight: 600;
   text-decoration: none;
 }
@@ -183,14 +183,14 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 4px rgba(139, 115, 85, 0.15);
   background: white;
 }
 
 .auth-button {
   padding: 1rem 1.5rem;
-  background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+  background: linear-gradient(45deg, #8B4513, #A0522D);
   color: white;
   border: none;
   border-radius: 12px;
@@ -220,7 +220,7 @@
 
 .auth-button:hover {
   transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(238, 90, 36, 0.4);
+  box-shadow: 0 15px 30px rgba(139, 69, 19, 0.4);
 }
 
 /* Header styling */

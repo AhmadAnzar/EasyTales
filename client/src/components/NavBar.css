@@ -69,13 +69,14 @@
 }
 
 .navbar-link-primary {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid white;
+  background: linear-gradient(45deg, #8B4513, #A0522D);
+  border: 2px solid #8B4513;
 }
 
 .navbar-link-primary:hover {
-  background: white;
-  color: var(--primary-color);
+  background: #A0522D;
+  color: white;
+  border-color: #A0522D;
 }
 
 .navbar-button {
