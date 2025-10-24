@@ -1,0 +1,255 @@
+.pending-paragraph {
+  background: white;
+  border-left: 4px solid #fbd38d;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
+}
+
+.pending-paragraph.voting-active {
+  border-left-color: #f5576c;
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.2);
+}
+
+.pending-paragraph.winner {
+  border-left-color: #48bb78;
+  background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+  box-shadow: 0 6px 16px rgba(72, 187, 120, 0.3);
+  animation: winnerGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes winnerGlow {
+  from {
+    box-shadow: 0 6px 16px rgba(72, 187, 120, 0.3);
+  }
+  to {
+    box-shadow: 0 8px 20px rgba(72, 187, 120, 0.5);
+  }
+}
+
+.pending-paragraph.vote-animation {
+  animation: voteUpdate 0.3s ease-out;
+}
+
+@keyframes voteUpdate {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pending-paragraph:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.pending-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.pending-author-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.pending-author-avatar {
+  font-size: 1.5rem;
+}
+
+.pending-author-name {
+  font-weight: 600;
+  color: #2d3748;
+  display: block;
+  font-size: 0.95rem;
+}
+
+.pending-date {
+  color: #a0aec0;
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 0.1rem;
+}
+
+.pending-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pending-badge {
+  background: #fbd38d;
+  color: #744210;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pending-badge.winner-badge {
+  background: #48bb78;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.pending-badge.voting-badge {
+  background: #f5576c;
+  color: white;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.6;
+  }
+}
+
+.pending-content {
+  margin-bottom: 1rem;
+}
+
+.pending-text {
+  color: #4a5568;
+  line-height: 1.8;
+  font-size: 1rem;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.pending-footer {
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.pending-voting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.vote-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.vote-btn:hover:not(.active) {
+  border-color: #cbd5e0;
+  transform: scale(1.05);
+}
+
+.vote-btn.active {
+  transform: scale(1.1);
+}
+
+.vote-btn.vote-up.active {
+  background: #48bb78;
+  border-color: #48bb78;
+}
+
+.vote-btn.vote-down.active {
+  background: #e53e3e;
+  border-color: #e53e3e;
+}
+
+.vote-btn.active .vote-icon {
+  filter: grayscale(0);
+}
+
+.vote-icon {
+  font-size: 1.5rem;
+}
+
+.vote-count {
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 1.1rem;
+}
+
+.vote-btn.active .vote-count {
+  color: white;
+}
+
+.vote-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.score-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #4a5568;
+}
+
+.score-value.positive {
+  color: #48bb78;
+}
+
+.score-value.negative {
+  color: #e53e3e;
+}
+
+.score-label {
+  font-size: 0.8rem;
+  color: #718096;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.pending-stats {
+  text-align: center;
+  color: #718096;
+  font-style: italic;
+}
+
+.pending-stat {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .pending-paragraph {
+    padding: 1rem;
+  }
+
+  .pending-header {
+    flex-wrap: wrap;
+  }
+
+  .pending-voting {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .vote-btn {
+    padding: 0.5rem 1rem;
+  }
+
+  .score-value {
+    font-size: 1.5rem;
+  }
+}

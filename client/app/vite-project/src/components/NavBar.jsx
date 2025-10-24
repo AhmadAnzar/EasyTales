@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.jpg';
 import './NavBar.css';
 
 const NavBar = () => {
@@ -14,14 +15,14 @@ const NavBar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
-          <span className="logo-icon">📚</span>
+        <Link to="/home" className="navbar-logo">
+          <img src={logo} alt="EasyTales Logo" className="logo-icon" />
           EasyTales
         </Link>
 
         <ul className="navbar-menu">
           <li className="navbar-item">
-            <Link to="/" className="navbar-link">
+            <Link to="/home" className="navbar-link">
               Home
             </Link>
           </li>
@@ -34,7 +35,7 @@ const NavBar = () => {
             <>
               <li className="navbar-item">
                 <Link to="/write" className="navbar-link navbar-link-primary">
-                  ✍️ Write
+                   Write
                 </Link>
               </li>
               <li className="navbar-item">
@@ -43,8 +44,11 @@ const NavBar = () => {
                 </Link>
               </li>
               <li className="navbar-item">
-                <Link to="/profile" className="navbar-link">
-                  👤 {user?.username || 'Profile'}
+                <Link to="/profile" className="navbar-link navbar-profile-link">
+                  <span className="navbar-profile-initial">
+                    {user?.username?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                  {user?.username || 'Profile'}
                 </Link>
               </li>
               <li className="navbar-item">

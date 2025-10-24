@@ -2,23 +2,27 @@
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1rem;
+  background: var(--background-paper);
+  border-radius: 12px;
+  font-family: 'Merriweather', serif;
 }
 
 .back-button {
   background: white;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border-color);
   padding: 0.5rem 1rem;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-light);
   margin-bottom: 1.5rem;
   transition: all 0.3s ease;
   font-size: 1rem;
+  font-family: 'Merriweather', serif;
 }
 
 .back-button:hover {
-  border-color: #667eea;
+  border-color: var(--primary-color);
   color: #667eea;
   transform: translateX(-2px);
 }
@@ -86,6 +90,8 @@
 }
 
 .story-genre {
+  display: inline-flex;
+  align-items: center;
   background: rgba(255, 255, 255, 0.25);
   color: white;
   padding: 0.4rem 0.8rem;
@@ -175,7 +181,7 @@
 
 .paragraphs-section .section-header h2 {
   font-size: 1.8rem;
-  color: #2c3e50;
+  color: var(--text-dark);
   margin: 0 0 1.5rem 0;
 }
 
@@ -267,4 +273,37 @@
   .pending-section {
     padding: 1.5rem;
   }
+}
+
+/* Story Actions */
+.story-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.demo-voting-button {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}
+
+.demo-voting-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(72, 187, 120, 0.4);
+}
+
+.demo-voting-button:active {
+  transform: translateY(0);
 }

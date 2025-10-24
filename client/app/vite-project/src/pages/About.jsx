@@ -1,3 +1,6 @@
+import logo from '../assets/logo.jpg';
+import './About.css';
+
 const About = () => {
   return (
     <div className="about-page">
@@ -45,7 +48,7 @@ const About = () => {
           <li>👥 Community-driven narrative development</li>
           <li>🗳️ Voting system to highlight the best contributions</li>
           <li>✨ AI-powered writing suggestions (coming soon)</li>
-          <li>📚 Multiple genres and story types</li>
+          <li className="logo-text-container"><img src={logo} alt="Feature" className="feature-logo" /> Multiple genres and story types</li>
           <li>🎨 Clean, intuitive interface</li>
         </ul>
       </section>
@@ -58,105 +61,6 @@ const About = () => {
           to practice their craft, learn from others, and create something amazing together.
         </p>
       </section>
-
-      <style jsx>{`
-        .about-page {
-          max-width: 800px;
-          margin: 0 auto;
-        }
-
-        .page-title {
-          font-size: 2.5rem;
-          color: #2d3748;
-          margin-bottom: 2rem;
-          text-align: center;
-        }
-
-        .about-section {
-          background: white;
-          padding: 2rem;
-          border-radius: 12px;
-          margin-bottom: 2rem;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .about-section h2 {
-          color: #667eea;
-          margin-bottom: 1rem;
-          font-size: 1.8rem;
-        }
-
-        .about-section p {
-          color: #4a5568;
-          line-height: 1.8;
-          font-size: 1.05rem;
-        }
-
-        .steps {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 1.5rem;
-          margin-top: 1.5rem;
-        }
-
-        .step {
-          text-align: center;
-        }
-
-        .step-number {
-          width: 50px;
-          height: 50px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.5rem;
-          font-weight: bold;
-          margin: 0 auto 1rem;
-        }
-
-        .step h3 {
-          color: #2d3748;
-          margin-bottom: 0.5rem;
-        }
-
-        .step p {
-          color: #718096;
-          font-size: 0.95rem;
-        }
-
-        .features-list {
-          list-style: none;
-          padding: 0;
-        }
-
-        .features-list li {
-          padding: 0.75rem 0;
-          color: #4a5568;
-          font-size: 1.05rem;
-          border-bottom: 1px solid #e2e8f0;
-        }
-
-        .features-list li:last-child {
-          border-bottom: none;
-        }
-
-        @media (max-width: 768px) {
-          .page-title {
-            font-size: 2rem;
-          }
-
-          .about-section {
-            padding: 1.5rem;
-          }
-
-          .steps {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </div>
   );
 };

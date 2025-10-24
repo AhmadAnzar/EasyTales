@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './SignUp.css';
+import './Auth.css';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -11,14 +11,23 @@ const SignUp = () => {
     confirmPassword: '',
   });
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   const { signup, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate('/home');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -74,11 +83,22 @@ const SignUp = () => {
     });
 
     if (result.success) {
-      navigate('/');
+      navigate('/home');
     } else {
       setErrors({ submit: result.error || 'Signup failed' });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="auth-page">
+        <div className="auth-loading">
+          <div className="loading-spinner"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-page">

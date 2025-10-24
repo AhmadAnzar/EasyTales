@@ -1,42 +1,81 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useStory } from '../context/StoryContext';
 import { useAuth } from '../context/AuthContext';
 import StoryCard from '../components/StoryCard';
 import SearchBar from '../components/SearchBar';
+import { storiesAPI } from '../services/api';
+import logo from '../assets/logo.jpg';
+import './Home.css';
 
 const Home = () => {
-  const { stories, fetchStories, loading } = useStory();
   const { isAuthenticated } = useAuth();
+  const [stories, setStories] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
 
   useEffect(() => {
-    fetchStories();
-  }, [fetchStories]);
+    loadStories();
+  }, []);
 
-  const handleSearch = (query) => {
+  const loadStories = async () => {
+    setLoading(true);
+    try {
+      const response = await storiesAPI.getAll();
+      setStories(response.data.stories || response.data);
+    } catch (error) {
+      console.error('Error loading stories:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async (query) => {
     setSearchQuery(query);
-    // In real app, this would trigger API call with search params
-    fetchStories({ search: query });
+    setLoading(true);
+    try {
+      const response = await storiesAPI.getAll({ search: query });
+      setStories(response.data.stories || response.data);
+    } catch (error) {
+      console.error('Error searching stories:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filteredStories = stories.filter((story) => {
-    if (filter === 'active') return story.status === 'active';
-    if (filter === 'completed') return story.status === 'completed';
+    if (filter === 'active') return story.status === 'open';
+    if (filter === 'completed') return story.status === 'closed';
     return true;
   });
+
+  const handlePrevious = () => {
+    setCurrentStoryIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentStoryIndex((prev) => Math.min(filteredStories.length - 1, prev + 1));
+  };
+
+  // Reset index when filter changes
+  useEffect(() => {
+    setCurrentStoryIndex(0);
+  }, [filter, searchQuery]);
 
   return (
     <div className="home-page">
       <section className="hero">
-        <h1 className="hero-title">📚 Welcome to EasyTales</h1>
+        <h1 className="hero-title">
+          <img src={logo} alt="EasyTales Logo" className="hero-logo" />
+          Welcome to EasyTales
+        </h1>
         <p className="hero-subtitle">
           Collaborate with writers worldwide to create amazing stories, one paragraph at a time.
         </p>
         {isAuthenticated && (
           <Link to="/write" className="hero-cta">
-            ✍️ Start Writing
+            Start Writing
           </Link>
         )}
       </section>
@@ -81,122 +120,49 @@ const Home = () => {
             )}
           </div>
         ) : (
-          <div className="stories-grid">
-            {filteredStories.map((story) => (
-              <StoryCard key={story._id} story={story} />
-            ))}
-          </div>
+          <>
+            <div className="stories-grid">
+              <div 
+                className="story-carousel"
+                style={{
+                  transform: `translateX(-${currentStoryIndex * 100}%)`
+                }}
+              >
+                {filteredStories.map((story) => (
+                  <div key={story._id} className="story-card-slide">
+                    <StoryCard story={story} />
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {filteredStories.length > 1 && (
+              <div className="stories-navigation">
+                <button 
+                  className="nav-button" 
+                  onClick={handlePrevious}
+                  disabled={currentStoryIndex === 0}
+                >
+                  ← Previous
+                </button>
+                
+                <div className="story-counter">
+                  {currentStoryIndex + 1} of {filteredStories.length}
+                </div>
+                
+                <button 
+                  className="nav-button" 
+                  onClick={handleNext}
+                  disabled={currentStoryIndex === filteredStories.length - 1}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
 
-      <style jsx>{`
-        .hero {
-          text-align: center;
-          padding: 3rem 1rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          border-radius: 12px;
-          color: white;
-          margin-bottom: 2rem;
-        }
-
-        .hero-title {
-          font-size: 2.5rem;
-          margin-bottom: 1rem;
-        }
-
-        .hero-subtitle {
-          font-size: 1.2rem;
-          margin-bottom: 2rem;
-          opacity: 0.95;
-        }
-
-        .hero-cta {
-          display: inline-block;
-          background: white;
-          color: #667eea;
-          padding: 1rem 2rem;
-          border-radius: 8px;
-          text-decoration: none;
-          font-weight: 600;
-          transition: transform 0.3s;
-        }
-
-        .hero-cta:hover {
-          transform: translateY(-2px);
-        }
-
-        .search-section {
-          margin-bottom: 2rem;
-        }
-
-        .filter-section {
-          margin-bottom: 2rem;
-        }
-
-        .filter-buttons {
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-        }
-
-        .filter-button {
-          padding: 0.5rem 1.5rem;
-          border: 2px solid #e2e8f0;
-          background: white;
-          border-radius: 8px;
-          cursor: pointer;
-          font-weight: 600;
-          transition: all 0.3s;
-        }
-
-        .filter-button:hover {
-          border-color: #667eea;
-        }
-
-        .filter-button.active {
-          background: #667eea;
-          color: white;
-          border-color: #667eea;
-        }
-
-        .stories-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 1.5rem;
-        }
-
-        .loading,
-        .no-stories {
-          text-align: center;
-          padding: 3rem;
-          color: #718096;
-        }
-
-        .create-story-link {
-          display: inline-block;
-          margin-top: 1rem;
-          padding: 0.75rem 1.5rem;
-          background: #667eea;
-          color: white;
-          text-decoration: none;
-          border-radius: 8px;
-          font-weight: 600;
-        }
-
-        @media (max-width: 768px) {
-          .hero-title {
-            font-size: 2rem;
-          }
-
-          .hero-subtitle {
-            font-size: 1rem;
-          }
-
-          .stories-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
     </div>
   );
 };

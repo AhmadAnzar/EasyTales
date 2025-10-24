@@ -1,29 +1,37 @@
-import js from '@eslint/js'
 import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import pluginJs from '@eslint/js'
+import pluginReact from 'eslint-plugin-react'
+import pluginReactConfig from 'eslint-plugin-react/configs/recommended.js'
+import { fixupConfigRules } from '@eslint/compat'
+import pluginReactRefresh from 'eslint-plugin-react-refresh'
 
-export default defineConfig([
-  globalIgnores(['dist']),
+export default [
+  { files: ['**/*.{js,mjs,cjs,jsx}'] },
+  { languageOptions: { globals: globals.browser } },
+  pluginJs.configs.recommended,
   {
     files: ['**/*.{js,jsx}'],
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-    ],
+    plugins: {
+      react: pluginReact,
+      'react-refresh': pluginReactRefresh,
+    },
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
       parserOptions: {
-        ecmaVersion: 'latest',
-        ecmaFeatures: { jsx: true },
-        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    settings: {
+      react: {
+        version: 'detect',
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      ...pluginReact.configs.recommended.rules,
+      'react-refresh/only-export-components': 'warn',
+      'react/prop-types': 'off',
+      'react/react-in-jsx-scope': 'off',
     },
   },
-])
+]

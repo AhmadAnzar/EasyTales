@@ -1,60 +1,37 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTimer, PHASES } from '../context/TimerContext';
 import ParagraphCard from '../components/ParagraphCard';
 import ParagraphEditor from '../components/ParagraphEditor';
-import VotingTimer from '../components/VotingTimer';
-import PendingParagraph from '../components/PendingParagraph';
-import { mockAPI } from '../hooks/useMockData';
+import SafeDemoVoting from '../components/SafeDemoVoting';
+import { storiesAPI, paragraphsAPI, votesAPI } from '../services/api';
+import logo from '../assets/logo.jpg';
 import './Story.css';
 
 const Story = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const { storyTimers, initializeTimer, addSubmission } = useTimer();
   const [story, setStory] = useState(null);
   const [paragraphs, setParagraphs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditor, setShowEditor] = useState(false);
   const [userVotes, setUserVotes] = useState({});
-
-  const timer = storyTimers[id];
+  const [showFakeVoting, setShowFakeVoting] = useState(false);
 
   useEffect(() => {
     if (id) {
       loadStory();
-      // Initialize timer if not exists
-      if (!storyTimers[id]) {
-        initializeTimer(id);
-      }
     }
   }, [id]);
-
-  // When voting completes and winner is selected, add it to paragraphs
-  useEffect(() => {
-    if (timer?.phase === PHASES.COMPLETED && timer.winner && !timer.winnerAdded) {
-      const winnerParagraph = {
-        _id: timer.winner.id,
-        content: timer.winner.content,
-        author: timer.winner.author || { username: 'Anonymous' },
-        createdAt: new Date().toISOString(),
-        votes: timer.winner.votes,
-        position: paragraphs.length + 1,
-      };
-      setParagraphs([...paragraphs, winnerParagraph]);
-      // Mark as added to prevent duplicates
-      timer.winnerAdded = true;
-    }
-  }, [timer?.phase, timer?.winner]);
 
   const loadStory = async () => {
     setLoading(true);
     try {
-      const data = await mockAPI.getStory(id);
-      setStory(data);
-      setParagraphs(data.paragraphs || []);
+      const response = await storiesAPI.getById(id);
+      const storyData = response.data.story || response.data;
+      setStory(storyData);
+      setParagraphs(storyData.paragraphs || []);
     } catch (error) {
       console.error('Error loading story:', error);
     } finally {
@@ -64,41 +41,42 @@ const Story = () => {
 
   const handleAddParagraph = async (paragraphData) => {
     try {
-      // During submission phase, add to pending submissions
-      if (timer?.phase === PHASES.SUBMISSION) {
-        addSubmission(id, {
-          content: paragraphData.content,
-          author: user || { username: 'Anonymous' },
-        });
-        setShowEditor(false);
-      } else {
-        // If no timer active, add directly (fallback)
-        const newParagraph = await mockAPI.addParagraph(id, paragraphData.content);
-        setParagraphs([...paragraphs, newParagraph]);
-        setShowEditor(false);
-      }
+      // Always add directly to story for real functionality
+      const response = await paragraphsAPI.create({ 
+        content: paragraphData.content, 
+        storyId: id 
+      });
+      const newParagraph = response.data.paragraph || response.data;
+      setParagraphs([...paragraphs, newParagraph]);
+      setShowEditor(false);
+      
+      // Reload story to get fresh data
+      loadStory();
     } catch (error) {
       console.error('Error adding paragraph:', error);
     }
   };
 
+  const handleFakeVotingComplete = (winner) => {
+    // Add the winning paragraph to the actual story
+    const winnerParagraph = {
+      _id: `winner-${Date.now()}`,
+      content: winner.content,
+      author: winner.author || { username: 'Community Winner' },
+      createdAt: new Date().toISOString(),
+      votesCount: (winner.votes.upvotes || 0) - (winner.votes.downvotes || 0),
+    };
+    
+    setParagraphs(prevParagraphs => [...prevParagraphs, winnerParagraph]);
+    setShowFakeVoting(false);
+  };
+
   const handleVote = async (paragraphId, voteType) => {
     try {
-      await mockAPI.voteParagraph(paragraphId, voteType);
+      await votesAPI.vote(paragraphId, voteType);
       setUserVotes({ ...userVotes, [paragraphId]: voteType });
-      // Update local vote count
-      setParagraphs(paragraphs.map(p => {
-        if (p._id === paragraphId) {
-          const votes = { ...p.votes };
-          if (voteType === 'upvote') {
-            votes.upvotes += 1;
-          } else {
-            votes.downvotes += 1;
-          }
-          return { ...p, votes };
-        }
-        return p;
-      }));
+      // Reload story to get updated vote counts
+      loadStory();
     } catch (error) {
       console.error('Vote error:', error);
     }
@@ -130,49 +108,40 @@ const Story = () => {
           
           <div className="story-meta">
             {story.genre && (
-              <span className="story-genre">📚 {story.genre}</span>
+              <span className="story-genre"><img src={logo} alt="Genre" className="genre-logo" /> {story.genre}</span>
             )}
             <span className="story-status">{story.status || 'active'}</span>
             <span className="story-author">
               by {story.author?.username || 'Anonymous'}
             </span>
           </div>
+          
+          <div className="story-actions">
+            {!showFakeVoting && (
+              <button 
+                className="demo-voting-button"
+                onClick={() => setShowFakeVoting(true)}
+              >
+                🗳️ Demo Community Voting
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Timer and Voting Section */}
-      {timer && (
-        <VotingTimer storyId={id} />
+      {/* Safe Demo Voting System */}
+      {showFakeVoting && (
+        <SafeDemoVoting 
+          onComplete={handleFakeVotingComplete}
+        />
       )}
 
-      {/* Pending Submissions Section */}
-      {timer && timer.submissions.length > 0 && (
-        <div className="pending-section">
-          <div className="section-header">
-            <h2>
-              {timer.phase === PHASES.SUBMISSION ? '📝 Current Submissions' : '🗳️ Vote for Your Favorite!'}
-            </h2>
-            <span className="pending-count">
-              {timer.submissions.length} {timer.submissions.length === 1 ? 'submission' : 'submissions'}
-            </span>
-          </div>
-          
-          <div className="pending-list">
-            {timer.submissions.map((submission) => (
-              <PendingParagraph
-                key={submission.id}
-                storyId={id}
-                submission={submission}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+
 
       <div className="paragraphs-section">
         <div className="section-header">
           <h2>📖 Story ({paragraphs.length} paragraphs)</h2>
-          {isAuthenticated && !showEditor && timer?.phase === PHASES.SUBMISSION && (
+          {isAuthenticated && !showEditor && (
             <button
               className="add-paragraph-button"
               onClick={() => setShowEditor(true)}
@@ -182,7 +151,7 @@ const Story = () => {
           )}
         </div>
 
-        {showEditor && timer?.phase === PHASES.SUBMISSION && (
+        {showEditor && (
           <ParagraphEditor
             storyId={id}
             onSubmit={handleAddParagraph}
