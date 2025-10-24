@@ -64,98 +64,27 @@ EasyTales/
 ├── client/                          # React Frontend Application
 │   ├── src/
 │   │   ├── components/              # Reusable UI Components
-│   │   │   ├── NavBar.jsx          # Navigation with user profiles & logo
-│   │   │   ├── Footer.jsx          # App footer with social links
-│   │   │   ├── StoryCard.jsx       # Story preview cards with logo integration
-│   │   │   ├── ParagraphCard.jsx   # Paragraph display with voting UI
-│   │   │   ├── ParagraphEditor.jsx # Rich text editor for writing
-│   │   │   ├── AISuggestButton.jsx # AI-powered writing assistance
-│   │   │   ├── VoteButton.jsx      # Upvote/downvote functionality
-│   │   │   ├── SearchBar.jsx       # Story search and filtering
-│   │   │   ├── StoryForm.jsx       # Story creation/editing forms
-│   │   │   ├── ErrorBoundary.jsx   # Error handling wrapper
-│   │   │   └── VotingTimer.jsx     # Voting phase countdown
-│   │   │
 │   │   ├── pages/                  # Route-level Page Components
-│   │   │   ├── Landing.jsx         # Animated storytelling landing page
-│   │   │   ├── Home.jsx            # Story catalog with multiple layouts
-│   │   │   ├── Story.jsx           # Individual story reading view
-│   │   │   ├── Write.jsx           # Story creation interface
-│   │   │   ├── MyStories.jsx       # User's story management dashboard
-│   │   │   ├── Profile.jsx         # User profile & statistics
-│   │   │   ├── About.jsx           # Platform information
-│   │   │   ├── SignIn.jsx          # User authentication
-│   │   │   └── SignUp.jsx          # User registration
-│   │   │
 │   │   ├── context/                # React Context Providers
-│   │   │   ├── AuthContext.jsx     # Authentication state & JWT handling
-│   │   │   ├── StoryContext.jsx    # Story management & API calls
-│   │   │   └── TimerContext.jsx    # Voting timer management
-│   │   │
 │   │   ├── services/               # API Integration Layer
-│   │   │   └── api.js              # Axios instance with interceptors
-│   │   │
 │   │   ├── hooks/                  # Custom React Hooks
-│   │   │   ├── useFetch.js         # Data fetching hook
-│   │   │   └── useMockData.js      # Development data hook
-│   │   │
 │   │   ├── data/                   # Mock Data & Development Seeds
-│   │   │   └── mockData.js         # Comprehensive story/user sample data
-│   │   │
 │   │   ├── utils/                  # Utility Functions
-│   │   │   └── formatDate.js       # Date/time formatting helpers
-│   │   │
 │   │   └── assets/                 # Static Assets
-│   │       ├── logo.jpg            # Platform logo
-│   │       └── react.svg           # React default asset
-│   │
 │   ├── package.json                # Frontend dependencies
 │   ├── vite.config.js              # Vite build configuration
 │   └── eslint.config.js            # Code linting rules
 │
 ├── server/                         # Node.js Backend API
 │   ├── controllers/                # Business Logic Controllers
-│   │   ├── authController.js       # User authentication logic
-│   │   ├── storyController.js      # Story CRUD operations
-│   │   ├── paragraphController.js  # Paragraph management
-│   │   ├── userController.js       # User profile operations
-│   │   ├── voteController.js       # Voting system logic
-│   │   ├── aiController.js         # AI integration with fallbacks
-│   │   └── adminController.js      # Administrative functions
-│   │
 │   ├── models/                     # MongoDB Data Models
-│   │   ├── User.js                 # User schema with authentication
-│   │   ├── Story.js                # Story schema with metadata
-│   │   ├── Paragraph.js            # Paragraph schema with voting
-│   │   └── Vote.js                 # Vote tracking schema
-│   │
 │   ├── routes/                     # Express Route Definitions
-│   │   ├── auth.js                 # Authentication endpoints
-│   │   ├── stories.js              # Story management routes
-│   │   ├── paragraphs.js           # Paragraph handling routes
-│   │   ├── users.js                # User management routes
-│   │   ├── votes.js                # Voting system routes
-│   │   ├── ai.js                   # AI-powered features
-│   │   ├── admin.js                # Administrative routes
-│   │   └── seed.js                 # Database seeding endpoints
-│   │
 │   ├── middleware/                 # Express Middleware
-│   │   ├── auth.js                 # JWT authentication middleware
-│   │   ├── adminAuth.js            # Admin authorization middleware
-│   │   └── errorHandler.js         # Global error handling
-│   │
 │   ├── config/                     # Configuration Files
-│   │   └── database.js             # MongoDB connection setup
-│   │
 │   ├── scripts/                    # Utility Scripts
-│   │   └── seedDatabase.js         # Database population script
-│   │
 │   ├── utils/                      # Server Utilities
-│   │   └── aiSeeder.js             # AI-powered content generation
-│   │
 │   ├── server.js                   # Main Express application
 │   └── package.json                # Backend dependencies
-│
 └── README.md                       # This comprehensive guide
 ```
 
@@ -415,26 +344,26 @@ npm test             # Run test suite (placeholder)
 ## 🎯 Roadmap & Future Enhancements
 
 ### Short Term (Current Development)
-- ✅ Core collaborative writing functionality
-- ✅ AI-powered writing assistance with fallbacks
-- ✅ Responsive design with brown storytelling theme  
-- ✅ User authentication and profile management
-- ✅ Comprehensive mock data system
+-  Core collaborative writing functionality
+-  AI-powered writing assistance with fallbacks
+-  Responsive design with brown storytelling theme  
+-  User authentication and profile management
+-  Comprehensive mock data system
 
 ### Medium Term (Next Release)
-- 🔄 Real-time collaboration with WebSockets
-- 🔄 Enhanced voting mechanisms and story completion
-- 🔄 Advanced search and filtering capabilities
-- 🔄 Email notifications for story updates
-- 🔄 Mobile app development (React Native)
+-  Real-time collaboration with WebSockets
+-  Enhanced voting mechanisms and story completion
+-  Advanced search and filtering capabilities
+-  Email notifications for story updates
+-  Mobile app development (React Native)
 
 ### Long Term (Future Vision)
-- 📋 Story export to PDF/EPUB formats
-- 📋 Advanced analytics and writing insights  
-- 📋 Story collaboration analytics and metrics
-- 📋 Integration with publishing platforms
-- 📋 Multi-language support and internationalization
-- 📋 Advanced AI features (story analysis, style suggestions)
+-  Story export to PDF/EPUB formats
+-  Advanced analytics and writing insights  
+-  Story collaboration analytics and metrics
+-  Integration with publishing platforms
+-  Multi-language support and internationalization
+-  Advanced AI features (story analysis, style suggestions)
 
 ---
 
