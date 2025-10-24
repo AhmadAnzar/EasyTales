@@ -85,7 +85,6 @@ const Landing = () => {
   return (
     <div className="story-trail-landing">
       <NavBar />
-      <MusicPlayer />
       <div className="brand-header">
         <h1 className="brand-title">EasyTales</h1>
         <p className="brand-subtitle">Where Stories Come to Life</p>
