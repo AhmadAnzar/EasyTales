@@ -1,20 +1,32 @@
 {
-  "name": "server",
+  "name": "easytales-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend server for EasyTales collaborative storytelling platform",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node scripts/seedDatabase.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "storytelling",
+    "collaboration",
+    "express",
+    "mongodb"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "mongoose": "^8.19.1"
+    "mongoose": "^8.19.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^17.2.3",
+    "cors": "^2.8.5",
+    "express-validator": "^7.0.1",
+    "axios": "^1.6.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
