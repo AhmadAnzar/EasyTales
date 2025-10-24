@@ -5,32 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import NavBar from '../components/NavBar';
 import './Landing.css';
 
-// TypewriterText component removed - now using instant text display
-
-const MusicPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef(null);
-
-  const toggleMusic = () => {
-    if (audioRef.current) {
-      if (isPlaying) audioRef.current.pause();
-      else audioRef.current.play().catch(e => console.log('Audio play failed:', e));
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  return (
-    <div className="music-player">
-      <button onClick={toggleMusic} className="music-toggle">
-        {isPlaying ? '🔊' : '🔇'}
-      </button>
-      <audio ref={audioRef} loop>
-        {/* <source src="/path/to/music.mp3" type="audio/mpeg" /> */}
-      </audio>
-    </div>
-  );
-};
-
 const Landing = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
