@@ -31,6 +31,7 @@ app.use(cors({
       'http://127.0.0.1:3001',
       'http://localhost:3000',  // add this
       'http://127.0.0.1:3000',  // add this too
+      'https://easy-tales.vercel.app'
     ];
     // Allow non-browser tools (no origin) and allowed origins
     if (!origin || allowed.includes(origin)) return callback(null, true);
