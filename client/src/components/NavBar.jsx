@@ -26,11 +26,6 @@ const NavBar = () => {
               Home
             </Link>
           </li>
-          <li className="navbar-item">
-            <Link to="/about" className="navbar-link">
-              About
-            </Link>
-          </li>
           {isAuthenticated && (
             <>
               <li className="navbar-item">

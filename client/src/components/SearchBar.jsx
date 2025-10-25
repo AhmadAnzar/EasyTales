@@ -31,7 +31,6 @@ const SearchBar = ({ onSearch, placeholder = 'Search stories...' }) => {
   return (
     <form className="search-bar" onSubmit={handleSubmit}>
       <div className="search-bar-container">
-        <span className="search-icon">🔍</span>
         <input
           type="text"
           className="search-input"

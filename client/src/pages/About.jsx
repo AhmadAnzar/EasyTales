@@ -44,12 +44,12 @@ const About = () => {
       <section className="about-section">
         <h2>Features</h2>
         <ul className="features-list">
-          <li>✍️ Collaborative paragraph-by-paragraph storytelling</li>
-          <li>👥 Community-driven narrative development</li>
-          <li>🗳️ Voting system to highlight the best contributions</li>
-          <li>✨ AI-powered writing suggestions (coming soon)</li>
+          <li> Collaborative paragraph-by-paragraph storytelling</li>
+          <li> Community-driven narrative development</li>
+          <li> Voting system to highlight the best contributions</li>
+          <li> AI-powered writing suggestions</li>
           <li className="logo-text-container"><img src={logo} alt="Feature" className="feature-logo" /> Multiple genres and story types</li>
-          <li>🎨 Clean, intuitive interface</li>
+
         </ul>
       </section>
 
